@@ -124,4 +124,44 @@ class LoanControllerTest {
                         jsonPath("amount", is(10000.0)),
                         jsonPath("period", is(55)));
     }
+
+    @Test
+    void shouldApproveLowerThanRequestedAmount_whenCreditScoreIsLow() throws Exception {
+        String payload = """
+                {
+                    "personalCode": "49002010976",
+                    "loanAmount": 3000.00,
+                    "loanPeriod": 20
+                }
+                """;
+        mockMvc.perform(post("/loans")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("status", is("APPROVED")),
+                        jsonPath("message", is("You loan application has been approved")),
+                        jsonPath("amount", is(2000.0)),
+                        jsonPath("period", is(20)));
+    }
+
+    @Test
+    void shouldApproveLowerThanRequestedAmount_andLongerThanRequestedPeriod_whenCreditScoreIsLow() throws Exception {
+        String payload = """
+                {
+                    "personalCode": "49002010976",
+                    "loanAmount": 3000.00,
+                    "loanPeriod": 18
+                }
+                """;
+        mockMvc.perform(post("/loans")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("status", is("APPROVED")),
+                        jsonPath("message", is("You loan application has been approved")),
+                        jsonPath("amount", is(2000.0)),
+                        jsonPath("period", is(20)));
+    }
 }

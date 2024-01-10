@@ -38,14 +38,30 @@ public class LoanService {
 
         var creditScore = getCreditScoreForUser(user, loanApplication);
         if (creditScore >= 1) {
-            return getMaximumAllowedLoanAmountForUser(user, loanApplication);
+            return getLoanDecisionForHighCreditScore(user, loanApplication);
+        } else {
+            return getLoanDecisionForLowCreditScore(user, loanApplication);
         }
-
-
-        return null;
     }
 
-    private LoanDecision getMaximumAllowedLoanAmountForUser(UserProfile user, LoanApplication loanApplication) {
+    private LoanDecision getLoanDecisionForLowCreditScore(UserProfile user, LoanApplication loanApplication) {
+        var amount = (double) user.creditModifier() * loanApplication.loanPeriod();
+        if (amount < MIN_AMOUNT) {
+            var period = (int) Math.round(MIN_AMOUNT / user.creditModifier());
+            return new LoanDecision(APPROVED,
+                    "You loan application has been approved",
+                    MIN_AMOUNT,
+                    period);
+        } else {
+            return new LoanDecision(APPROVED,
+                    "You loan application has been approved",
+                    amount,
+                    loanApplication.loanPeriod());
+
+        }
+    }
+
+    private LoanDecision getLoanDecisionForHighCreditScore(UserProfile user, LoanApplication loanApplication) {
         var maxIssuedAmount = user.creditModifier() / (1.0 / loanApplication.loanPeriod());
         var decisionAmount = Math.min(maxIssuedAmount, MAX_AMOUNT);
         return new LoanDecision(APPROVED,
