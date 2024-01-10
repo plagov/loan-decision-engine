@@ -15,4 +15,11 @@ public class ExceptionHandlerConfiguration {
     public String handleInvalidInput(LoanInvalidInputException exception) {
         return exception.getMessage();
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public String handleUserNotFound(UserNotFoundException exception) {
+        return exception.getMessage();
+    }
 }

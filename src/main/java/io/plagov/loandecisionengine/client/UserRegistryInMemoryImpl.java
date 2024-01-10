@@ -1,9 +1,9 @@
 package io.plagov.loandecisionengine.client;
 
+import io.plagov.loandecisionengine.exception.UserNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class UserRegistryInMemoryImpl implements UserRegistryApi {
@@ -12,7 +12,7 @@ public class UserRegistryInMemoryImpl implements UserRegistryApi {
     public UserProfile findUser(String personalCode) {
         return USERS.stream().filter(user -> personalCode.equals(user.personalCode()))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new UserNotFoundException("User with personal code %s not found".formatted(personalCode)));
     }
 
     private final static List<UserProfile> USERS = List.of(

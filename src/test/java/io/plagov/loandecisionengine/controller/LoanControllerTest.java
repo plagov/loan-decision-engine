@@ -1,6 +1,7 @@
 package io.plagov.loandecisionengine.controller;
 
 import io.plagov.loandecisionengine.exception.LoanInvalidInputException;
+import io.plagov.loandecisionengine.exception.UserNotFoundException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -163,5 +164,24 @@ class LoanControllerTest {
                         jsonPath("message", is("You loan application has been approved")),
                         jsonPath("amount", is(2000.0)),
                         jsonPath("period", is(20)));
+    }
+
+    @Test
+    void shouldThrownException_whenUserNotFound() throws Exception {
+        String payload = """
+                {
+                    "personalCode": "12345678901",
+                    "loanAmount": 5000,
+                    "loanPeriod": 12
+                }
+                """;
+        var result = mockMvc.perform(post("/loans")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().is5xxServerError())
+                .andReturn();
+        assertThat(result.getResolvedException())
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with personal code 12345678901 not found");
     }
 }
