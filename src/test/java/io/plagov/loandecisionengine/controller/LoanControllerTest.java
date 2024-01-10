@@ -1,6 +1,7 @@
 package io.plagov.loandecisionengine.controller;
 
 import io.plagov.loandecisionengine.exception.LoanInvalidInputException;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -12,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,8 +40,9 @@ class LoanControllerTest {
                 .andExpectAll(
                         status().isOk(),
                         jsonPath("status", is("REJECTED")),
-                        jsonPath("message", is("You loan application is rejected because you have a debt"))
-                );
+                        jsonPath("message", is("You loan application is rejected because you have a debt")),
+                        jsonPath("amount", nullValue()),
+                        jsonPath("period", nullValue()));
     }
 
     @ParameterizedTest
@@ -80,5 +83,45 @@ class LoanControllerTest {
         assertThat(result.getResolvedException())
                 .isInstanceOf(LoanInvalidInputException.class)
                 .hasMessage("The loan period must be within 12 and 60 months range");
+    }
+
+    @Test
+    void shouldApproveHigherAmount_whenLoanApplicationApproved() throws Exception {
+        String payload = """
+                {
+                    "personalCode": "49002010987",
+                    "loanAmount": 5000.00,
+                    "loanPeriod": 20
+                }
+                """;
+        mockMvc.perform(post("/loans")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("status", is("APPROVED")),
+                        jsonPath("message", is("You loan application has been approved")),
+                        jsonPath("amount", is(6000.0)),
+                        jsonPath("period", is(20)));
+    }
+
+    @Test
+    void shouldApproveMaximumAmount_whenLoanApplicationApproved() throws Exception {
+        String payload = """
+                {
+                    "personalCode": "49002010987",
+                    "loanAmount": 5000.00,
+                    "loanPeriod": 55
+                }
+                """;
+        mockMvc.perform(post("/loans")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("status", is("APPROVED")),
+                        jsonPath("message", is("You loan application has been approved")),
+                        jsonPath("amount", is(10000.0)),
+                        jsonPath("period", is(55)));
     }
 }

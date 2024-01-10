@@ -17,12 +17,7 @@ public class UserRegistryInMemoryImpl implements UserRegistryApi {
 
     private final static List<UserProfile> USERS = List.of(
             new UserProfile("49002010965", true, null),
-            new UserProfile("49002010976", false, 1),
-            new UserProfile("49002010987", false, 2),
-            new UserProfile("49002010998", false, 3));
-
-    private final static Map<Integer, Integer> SEGMENTS = Map.of(
-            1, 100,
-            2, 300,
-            3, 1000);
+            new UserProfile("49002010976", false, 100),
+            new UserProfile("49002010987", false, 300),
+            new UserProfile("49002010998", false, 1000));
 }
